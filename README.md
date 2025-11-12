@@ -26,7 +26,7 @@ This project implements and analyzes bearing fault detection models using **Supp
 3. **Identify critical features** for each fault type and severity level
 4. **Enable actionable insights** for predictive maintenance strategies
 
-**Key Achievement**: 98% test accuracy (196/200 correct predictions) with only 4 misclassifications, demonstrating state-of-the-art performance with full interpretability.
+**Key Achievement**: 96.4% test accuracy (723/750 correct predictions) with 27 misclassifications on the full test set, demonstrating state-of-the-art performance with full interpretability. Detailed SHAP analysis was performed on a 200-sample subset achieving 98% accuracy (196/200 correct).
 
 ## 📊 Dataset
 
@@ -35,7 +35,7 @@ This project implements and analyzes bearing fault detection models using **Supp
 The **Case Western Reserve University Bearing Dataset** contains vibration signals from bearings with artificially introduced defects. This dataset is widely used in predictive maintenance research and industrial diagnostics.
 
 **Dataset Characteristics:**
-- **Total Samples**: 3,000 samples across 10 fault classes
+- **Total Samples**: 2,300 samples across 10 fault classes
 - **Sampling Frequency**: 48 kHz
 - **Time Segment Length**: 2,048 points (0.04 seconds per segment)
 - **Motor Load**: 1 HP
@@ -125,9 +125,9 @@ Nine statistical features are extracted from time-domain vibration signals:
 
 ### 1. Data Preprocessing
 
-- **Train-Test Split**: 80% training, 20% testing
+- **Train-Test Split**: 67.4% training (1,550 samples), 32.6% testing (750 samples)
 - **Feature Scaling**: StandardScaler for normalization
-- **Class Balancing**: Relatively balanced dataset (75 samples per class)
+- **Class Balancing**: Perfectly balanced dataset (230 samples per class in original dataset; 75 samples per class in test set after split)
 
 ### 2. Model Training
 
@@ -169,23 +169,35 @@ Nine statistical features are extracted from time-domain vibration signals:
 
 | Model | Accuracy | Avg ROC-AUC | Avg PR-AUC | Misclassifications |
 |-------|----------|-------------|------------|-------------------|
-| **SVC (Best)** | **98.0%** | **0.731** | **0.623** | **4/200** |
-| **Logistic Regression** | **94.3%** | **0.656** | **0.606** | **11/200** |
+| **SVC (Best)** | **96.4%** | **0.731** | **0.623** | **27/750** |
+| **Logistic Regression** | **94.3%** | **0.656** | **0.606** | **43/750** |
+
+**Note**: Performance metrics are reported on the full test set (750 samples). Detailed SHAP explainability analysis was performed on a 200-sample subset for computational efficiency, achieving 98% accuracy (196/200 correct) on that subset.
 
 ### Per-Class Performance (SVC)
 
-- **Perfect Classification** (100% precision/recall): IR_007_1, IR_014_1, IR_021_1, OR_007_6_1, OR_014_6_1, OR_021_6_1, Normal_1
+- **Perfect Classification** (100% precision/recall on initial model): IR_007_1, IR_014_1, IR_021_1, OR_007_6_1, OR_021_6_1, Normal_1
 - **High Performance** (>95% F1-score): Ball_007_1, Ball_021_1
 - **Good Performance** (>90% F1-score): Ball_014_1
+- **Note**: Some classes (Ball_014_1, Ball_021_1, OR_014_6_1) showed multiple misclassifications in the full test set, primarily involving confusion between similar severity levels
 
 ### Misclassification Analysis
 
-Only **4 misclassifications** out of 200 test samples:
+**Full Test Set (750 samples)**: **27 misclassifications** (3.6% error rate)
+
+**Primary Misclassification Patterns:**
+- Ball_014_1: 9 misclassifications (confused with Normal_1, OR_014_6_1, and other classes)
+- Ball_021_1: 8 misclassifications (primarily confused with OR_014_6_1)
+- OR_014_6_1: 8 misclassifications (confused with Ball_021_1, Ball_014_1, and Ball_007_1)
+- Ball_007_1: 1 misclassification
+- OR_021_6_1: 1 misclassification
+
+**SHAP Analysis Subset (200 samples)**: **4 misclassifications** analyzed in detail:
 1. OR_014_6_1 → Predicted as Ball_021_1
 2. Ball_014_1 → Predicted as Normal_1
 3. Ball_021_1 → Predicted as OR_014_6_1
 
-**Key Insight**: All errors involve confusion between similar severity levels (0.014" vs 0.021"), indicating the model struggles with subtle severity distinctions but excels at fault location identification.
+**Key Insight**: Most errors involve confusion between similar severity levels (0.014" vs 0.021") and between Ball and Outer Race faults at similar severities, indicating the model struggles with subtle severity distinctions but excels at fault location identification for clearly distinct classes.
 
 ## 🔑 Key Findings
 
@@ -439,7 +451,7 @@ This project uses the CWRU Bearing Dataset, which is publicly available for rese
 
 ---
 
-**Note**: This project demonstrates that machine learning for industrial diagnostics can be both highly accurate (98%) and fully interpretable through SHAP. The insights gained can directly improve bearing monitoring systems, reduce unplanned downtime, and enhance predictive maintenance strategies.
+**Note**: This project demonstrates that machine learning for industrial diagnostics can be both highly accurate (96.4% on full test set) and fully interpretable through SHAP. The insights gained can directly improve bearing monitoring systems, reduce unplanned downtime, and enhance predictive maintenance strategies.
 
 For detailed analysis and visualizations, please refer to the Jupyter notebook: `crwu-bearings-benchmarks-shap-explainability.ipynb`
 
